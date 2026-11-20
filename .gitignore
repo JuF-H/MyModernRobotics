@@ -3,3 +3,6 @@ __pycache__/
 .marscode/
 .DS_Store
 .ipynb_checkpoints/
+
+# 本地参考资料（版权书籍，不入库）
+*.pdf

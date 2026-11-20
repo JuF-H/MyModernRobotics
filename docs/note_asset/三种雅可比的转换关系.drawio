@@ -1,0 +1,62 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="第 1 页" id="KmjYunsPNFDSBzb1R29B">
+    <mxGraphModel dx="974" dy="884" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="1" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-26" edge="1" parent="1" source="xw7gQjxvmCPq7gyt_MO8-3" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;labelPadding=0 4;" target="xw7gQjxvmCPq7gyt_MO8-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-33" edge="1" parent="1" source="xw7gQjxvmCPq7gyt_MO8-3" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;labelPadding=0 4;" target="xw7gQjxvmCPq7gyt_MO8-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;gradientColor=none;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;$$J_s$$&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="70" x="160" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-25" edge="1" parent="1" source="xw7gQjxvmCPq7gyt_MO8-4" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;labelPadding=0 4;" target="xw7gQjxvmCPq7gyt_MO8-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-31" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;labelPadding=0 4;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="260" as="sourcePoint" />
+            <mxPoint x="440" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;gradientColor=none;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;$$J_b$$&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="70" x="560" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-32" edge="1" parent="1" source="xw7gQjxvmCPq7gyt_MO8-5" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;defaultLabelBackgroundColor=page;labelPadding=0 4;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="577.5" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;gradientColor=none;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;$$J_g$$&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="70" x="360" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;gradientColor=none;" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;$$Ad_{T_{sb}^{-1}} J_s$$&lt;/font&gt;" vertex="1">
+          <mxGeometry height="20" width="180" x="305" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-10" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;gradientColor=none;" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;$$\begin{bmatrix}&amp;nbsp;&lt;br&gt;\boldsymbol{I} &amp;amp; \boldsymbol{0} \\&amp;nbsp;&lt;br&gt;-[\boldsymbol{p}] &amp;amp; \boldsymbol{I}&amp;nbsp;&lt;br&gt;\end{bmatrix}&amp;nbsp; J_s$$&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="120" x="260" y="275" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-11" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;gradientColor=none;" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;$$\begin{bmatrix}&amp;nbsp;&lt;br&gt;\boldsymbol{I} &amp;amp; \boldsymbol{0} \\&amp;nbsp;&lt;br&gt;[\boldsymbol{p}] &amp;amp; \boldsymbol{I}&amp;nbsp;&lt;br&gt;\end{bmatrix}&amp;nbsp; J_g$$&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="140" x="180" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;gradientColor=none;" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;$$Ad_{T_{sb}} J_b$$&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="140" x="325" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-14" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;gradientColor=none;" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;$$\begin{bmatrix}&amp;nbsp;&lt;br&gt;\boldsymbol{R_{sb}^{T}} &amp;amp; \boldsymbol{0} \\&amp;nbsp;&lt;br&gt;\boldsymbol{0} &amp;amp; \boldsymbol{R_{sb}^{T}}&amp;nbsp;&lt;br&gt;\end{bmatrix}&amp;nbsp; J_g$$&lt;/font&gt;" vertex="1">
+          <mxGeometry height="130" width="180" x="380" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-15" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;gradientColor=none;" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;$$\begin{bmatrix}&amp;nbsp;&lt;br&gt;\boldsymbol{R_{sb}} &amp;amp; \boldsymbol{0} \\&amp;nbsp;&lt;br&gt;\boldsymbol{0} &amp;amp; \boldsymbol{R_{sb}}&amp;nbsp;&lt;br&gt;\end{bmatrix}&amp;nbsp; J_b$$&lt;/font&gt;" vertex="1">
+          <mxGeometry height="130" width="120" x="500" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="xw7gQjxvmCPq7gyt_MO8-30" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.397;entryY=1.034;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;labelPadding=0 4;entryPerimeter=0;" target="xw7gQjxvmCPq7gyt_MO8-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="350" y="500" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
