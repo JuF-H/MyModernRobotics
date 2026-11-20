@@ -1,7 +1,9 @@
 """扩展数学库：雅可比矩阵转换、可操作度指标、齐次变换工具。"""
 
 from .core import (
-    wrap_to_range,
+    is_within_limit,
+    clip_q,
+    wrap_to_limit,
     Js2Jg,
     Jb2Jg,
     Js2Jb,
@@ -21,8 +23,11 @@ from .compute import (
 )
 
 __all__ = [
+    # 关节限位
+    "is_within_limit",
+    "clip_q",
+    "wrap_to_limit",
     # 雅可比转换
-    "wrap_to_range",
     "Js2Jg",
     "Jb2Jg",
     "Js2Jb",

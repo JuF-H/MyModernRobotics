@@ -1,16 +1,54 @@
 import numpy as np
 import modern_robotics as mr
 
-def wrap_to_range(q, lo, hi):
+
+# ---------- 限位相关工具 ----------
+
+def is_within_limit(q, q_limit, tol=1e-9):
     """
-    将角度卷绕到 [lo, hi) 区间。
-    lo, hi 单位与 q 一致（弧度或角度都行，保持一致即可）。
+    判断一组关节角是否都在限位内
+    :param q: 关节角度(rad)
+    :param q_limit: 关节限位，维度为 2×n
+    :param tol: 误差容限
+    :return: 是否都在限位内
     """
     q = np.asarray(q, dtype=float)
-    span = hi - lo
-    if span <= 0:
-        raise ValueError("hi 必须大于 lo")
-    return (q - lo) % span + lo
+    return bool(np.all(q >= q_limit[0] - tol) and
+                np.all(q <= q_limit[1] + tol))
+
+
+def clip_q(q, q_limit):
+    """
+    把关节角裁剪到限位内
+    :param q: 关节角度(rad)
+    :param q_limit: 关节限位，维度为 2×n
+    :return: 裁剪后的关节角度(rad)
+    """
+    q = np.asarray(q, dtype=float)
+    return np.clip(q, q_limit[0], q_limit[1])
+
+
+def wrap_to_limit(q, q_limit, tol=1e-9):
+    """
+    把每个关节角卷绕到“限位内且离原值最近”的等效角（±2π 系列）。
+    若某个关节不存在这样的等效角，返回 None。
+    :param q: 关节角度(rad)
+    :param q_limit: 关节限位，维度为 2×n
+    :param tol: 误差容限
+    :return: 卷绕后的关节角度(rad)
+    """
+    q = np.asarray(q, dtype=float)
+    out = np.empty_like(q)
+    for i in range(q.size):
+        lo, hi = q_limit[0, i], q_limit[1, i]
+        # 把 q[i] 卷绕到 [lo, lo + 2π)
+        base = lo + np.mod(q[i] - lo, 2.0 * np.pi)
+        cands = [base - 2.0 * np.pi, base, base + 2.0 * np.pi]
+        valid = [c for c in cands if lo - tol <= c <= hi + tol]
+        if not valid:
+            return None
+        out[i] = min(valid, key=lambda c: abs(c - q[i]))
+    return out
 
 
 def Js2Jg(Js, T):

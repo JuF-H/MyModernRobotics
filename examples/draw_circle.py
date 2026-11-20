@@ -21,7 +21,6 @@ def main():
     # 3) 从当前末端所在的角度 π/2 出发，保证第一帧解 = q0
     angles = np.linspace(np.pi / 2, 2 * np.pi + np.pi / 2, N, endpoint=False)
 
-    q_prev = arm.get_q_z()          # 用上一帧解作为下一帧 IK 初值
     q_list = []
 
     for t in angles:
@@ -32,10 +31,12 @@ def main():
         T[:3, :3] = R
         T[:3, 3] = [x, y, 0.0]
 
-        q = arm.IK_n(q_prev, T)     # 不打印，避免 72 行刷屏
-        if q is not None:
-            q_prev = q
-        q_list.append(q)            # 失败帧放 None，动画里会跳过
+        # 逐帧移动，状态自动更新，所以下一帧 IK 的初值就是上一帧的解。
+        # verbose=False 关掉每帧的打印，避免 72 行刷屏。
+        if arm.move_T(T, verbose=False):
+            q_list.append(arm.get_q_z())   # 成功：记录移动后的关节角
+        else:
+            q_list.append(None)            # 失败帧放 None，动画里会跳过
 
     n_ok = sum(1 for q in q_list if q is not None)
     print(f"画圆：成功 {n_ok}/{N} 帧")
