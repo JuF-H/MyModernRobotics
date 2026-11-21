@@ -33,7 +33,7 @@ def main():
 
         # 逐帧移动，状态自动更新，所以下一帧 IK 的初值就是上一帧的解。
         # verbose=False 关掉每帧的打印，避免 72 行刷屏。
-        if arm.move_T(T, verbose=False):
+        if arm.moveT(T, verbose=False):
             q_list.append(arm.get_q_z())   # 成功：记录移动后的关节角
         else:
             q_list.append(None)            # 失败帧放 None，动画里会跳过

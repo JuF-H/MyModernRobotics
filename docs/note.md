@@ -227,6 +227,54 @@ $$\boxed{\operatorname{rank}(J) < \min(6, n)}$$
 * 若强行要求沿受限方向运动，可能需要极高的关节速度；
 * **旋量几何解释**：雅可比矩阵各列是各关节旋量在相应坐标系下的表达，奇异性对应这些旋量列向量之间出现线性相关。
 
+
+### 3.7 运动学性能指标
+
+在机器人运动学分析中，运动学性能指标用于衡量机械臂在特定构型 $\theta$ 下的速度传递能力、各向同性程度以及接近奇异构型时的数值/运动性能。
+
+#### 3.7.1 可操作度椭球（Manipulability Ellipsoid）
+
+考虑关节速度满足单位球约束：
+
+$$\Vert{}\dot{\theta}\Vert{}_2^2 = \dot{\theta}^{\mathrm{T}}\dot{\theta} = 1$$
+
+当机器人雅可比矩阵 $J(\theta) \in \mathbb{R}^{6 \times n}$（以满秩方阵或行满秩情形为例，设 $J$ 可逆或考虑 $V = J\dot{\theta}$）将关节速度映射为末端瞬时 Twist $V = J(\theta)\dot{\theta}$ 时，关节空间中的单位球在 Twist 空间（或分别在角速度 $\omega$ 与线速度 $v$ 子空间）中映射为一个**椭球**，称为**可操作度椭球（Manipulability Ellipsoid）**。
+
+当 $J$ 可逆时，由 $\dot{\theta} = J^{-1}V$ 代入单位球约束可得：
+
+$$1 = \dot{\theta}^{\mathrm{T}}\dot{\theta} = (J^{-1}V)^{\mathrm{T}}(J^{-1}V) = V^{\mathrm{T}}J^{-\mathrm{T}}J^{-1}V = V^{\mathrm{T}}(JJ^{\mathrm{T}})^{-1}V$$
+
+
+* **几何意义**：椭球的长轴方向表示末端最容易产生速度的方向，短轴方向表示最难产生速度的方向；椭球越趋近于球形，说明各方向运动能力越均衡。
+* **子空间分解**：在实际分析中，常将雅可比矩阵拆分为角速度部分 $J_{\omega}$ 与线速度部分 $J_{v}$，分别构造**线速度可操作度椭球**和**角速度可操作度椭球**，避免不同量纲（如 $\text{m/s}$ 与 $\text{rad/s}$）直接混合在同一个六维椭球中带来的物理量纲不一致问题。
+
+#### 3.7.2 雅可比矩阵的条件数（Condition Number）
+
+雅可比矩阵的条件数用于衡量矩阵的病态程度及求逆/运动映射的敏感性。设雅可比矩阵的非零奇异值为 $\sigma_{\max} = \sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_{\min} > 0$，则基于 2-范数的条件数定义为：
+
+$$\operatorname{cond}(J) = \Vert{}J\Vert{}_2 \Vert{}J^{+}\Vert{}_2 = \frac{\sigma_{\max}(J)}{\sigma_{\min}(J)}$$
+
+（注：原草稿中“表示雅可比矩阵的逆矩阵的条件数”表述有误；对于可逆方阵 $J$，由于 $(J^{-1})^{-1} = J$，因此 $\operatorname{cond}(J^{-1}) = \operatorname{cond}(J)$，条件数衡量的是 $J$ 本身及其求逆/线性求解时的数值敏感性与各向异性程度。）
+
+* **物理与数值意义**：
+* $\operatorname{cond}(J) \ge 1$，且 $\operatorname{cond}(J) = 1$ 时对应各向同性构型（可操作度椭球为正球，运动性能最均衡）；
+* 当 $\operatorname{cond}(J)$ 很大时，说明 $\sigma_{\min}$ 很小，机器人接近**奇异构型**，某些方向运动能力退化，且逆运动学/速度求解对误差高度敏感；当奇异值趋于 $0$ 时，$\operatorname{cond}(J) \to \infty$。
+
+
+
+#### 3.7.3 补充常见运动学性能指标
+
+除可操作度椭球与条件数外，运动学分析中还常结合以下指标综合评估构型性能：
+
+* **Yoshikawa 可操作度测度（Manipulability Measure）**：定义为雅可比奇异值的乘积（方阵时等于 $\vert{}\det(J)\vert{}$）：
+
+$$w(\theta) = \sqrt{\det\left(J(\theta)J(\theta)^{\mathrm{T}}\right)} = \sigma_1 \sigma_2 \cdots \sigma_m$$
+
+用于整体衡量可操作度椭球的“体积”大小；当机器人处于奇异构型时，$w(\theta) = 0$。需注意：$w(\theta)$ 仅反映整体大小，无法单独体现椭球是否扁平（需结合条件数或各向同性指标判断）。
+
+* **各向同性指标（Isotropy Index）**：常定义为 $\frac{1}{\operatorname{cond}(J)} = \frac{\sigma_{\min}}{\sigma_{\max}} \in [0, 1]$，越接近 $1$ 表示运动能力越接近各向同性，越接近 $0$ 表示越接近奇异。
+
+
 ---
 
 ## 四、逆运动学数值解法

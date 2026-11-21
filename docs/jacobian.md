@@ -151,13 +151,36 @@ Ja =  │                │ · Js          同上 r = log(R_sb)
 | 本库函数 | modern_robotics 对应 |
 |----------|----------------------|
 | `Robot.FK` | `mr.FKinSpace(M, S, θ)` |
-| `Robot.IK_n` | `mr.IKinSpace(S, M, T, θ₀, eω, ev)` |
+| `Robot.IK_n` | `mr.IKinSpace` + `expendlib.IK_space_damped` 多初值重试 |
+| `IK_space_damped` | （未内置，阻尼最小二乘 / Levenberg–Marquardt） |
 | `Js2Jb` / `Jb2Js` | `mr.Adjoint(T)` + `mr.TransInv(T)` |
 | `A_of_r` / `A_of_l` | （未内置，需自己实现） |
 | `Jb2Ja_r` 中的 `r` | `mr.so3ToVec(mr.MatrixLog3(R))` |
 
 `mr.JacobianSpace` / `mr.JacobianBody` 可直接算出 `Js` / `Jb`，
 再用本库函数转换成 `Jg` / `Ja`。
+
+### 5.1 为什么 `IK_n` 不直接用 `mr.IKinSpace`
+
+`mr.IKinSpace` 是**无阻尼牛顿法**（步长 `pinv(J)·V`，最多 40 次迭代），
+在奇异位形下有两类失效：
+
+1. **步长爆炸**：`σ_min → 0` 时伪逆把误差放大 `1/σ_min` 倍，迭代直接发散；
+2. **零梯度卡死**：3R 完全伸直（`θ = [0,0,0]`，末端 `(9,0,0)`）时，若目标
+   要求沿手臂方向收拢（如 `(6,0,0)`），该方向恰好落在 `null(Jᵀ)` 里，
+   `JᵀV = 0`，一步都走不动 —— 而这个目标其实是可达的，只是必须先离开该位形。
+
+因此 `Robot.IK_n` 的策略是：
+
+| 步骤 | 做法 |
+|------|------|
+| 多初值 | 当前关节角、当前角 ±0.4 rad、零位、初始位形 `q0` |
+| 双求解器 | `expendlib.IK_space_damped`（阻尼最小二乘，抗奇异）+ `mr.IKinSpace`（常规位形收敛快），两者互补 |
+| 选解 | 成功的解先 `wrap_to_limit` 卷进限位，再取**与当前关节角最接近**的那个（按 2π 周期化比较），避免机械臂乱跳 |
+| 复核 | 用真实位姿误差（末端平移距离、旋转向量范数）再验一遍 —— 旋量分量范数在有姿态偏差时比真实位置误差宽松数倍 |
+
+收敛判据、阻尼系数 `λ` 的自适应调节（误差降则 `λ↓`、不降则 `λ↑`）
+见 `expendlib.IK_space_damped` 的 docstring。
 
 ---
 

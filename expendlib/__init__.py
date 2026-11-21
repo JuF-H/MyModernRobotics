@@ -4,6 +4,7 @@ from .core import (
     is_within_limit,
     clip_q,
     wrap_to_limit,
+    IK_space_damped,
     Js2Jg,
     Jb2Jg,
     Js2Jb,
@@ -27,6 +28,8 @@ __all__ = [
     "is_within_limit",
     "clip_q",
     "wrap_to_limit",
+    # 逆运动学
+    "IK_space_damped",
     # 雅可比转换
     "Js2Jg",
     "Jb2Jg",

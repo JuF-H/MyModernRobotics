@@ -50,8 +50,10 @@ arm.print_Tc()
 # 正运动学
 T = arm.FK(np.array([0.1, 0.2, 0.3]))
 
-# 逆运动学（自动做关节限位检查，失败返回 None）
-q = arm.IK_n(arm.get_q_z(), T)
+# 逆运动学：移动到目标位姿（多初值 + 阻尼最小二乘，奇异位形也能解）
+# 成功返回 True 并更新全部状态；失败返回 False，所有状态保持不变
+arm.moveT(T)
+q = arm.get_q_z()          # 解出的关节角（相对于零位）
 
 # 绘图
 viz.plot(arm, arm_3R.LINK_LENGTHS)
@@ -71,10 +73,11 @@ python -m examples.transform_demo    # 绕点旋转
 
 | 想做的事 | 用什么 |
 |----------|--------|
-| 正/逆运动学、关节限位 | `arm_bot.Robot`（`FK` / `IK_n` / `set_q`） |
+| 正/逆运动学、关节限位 | `arm_bot.Robot`（`FK` / `moveT` / `moveJ` / `IK_n`） |
 | 画静态图、播放轨迹动画 | `arm_bot.viz.plot` / `viz.animate_trajectory` |
 | 换一个机器人模型 | 新建 `arm_bot/xxx.py`，照抄 `arm_3R.py` 的结构 |
 | 雅可比 Js↔Jb↔Jg↔Ja 互转 | `expendlib.Js2Jb` / `Js2Jg` / `Jb2Ja_r` … |
+| 奇异位形下更稳的 IK 求解器 | `expendlib.IK_space_damped` |
 | 可操作度 / 奇异性判断 | `expendlib.mu_1_axis_ratio` 等三个函数 |
 | 齐次变换构造 | `expendlib.rotate_about_point` 等 |
 

@@ -109,24 +109,59 @@ class Robot:
         """
         逆向运动学（数值解，纯计算，不修改对象状态）。
 
-        目标为 self.T_target，初值为当前关节角 thetalist_c，
-        容差取 self.eomg / self.ev。
-        :return: 成功且解在限位内返回关节角（相对于零位），否则返回 None
+        目标为 self.T_target，容差取 self.eomg / self.ev。
+
+        求解策略（奇异位形下单初值的牛顿法会发散，甚至卡在误差梯度为零的
+        点上——比如 3R 完全伸直时，沿手臂方向的收拢运动一阶不可达）：
+          1) 多个初值：当前关节角、当前角 ± 扰动、零位、初始位形；
+          2) 每个初值分别用阻尼最小二乘 IK（expendlib.IK_space_damped）
+             和 modern_robotics.IKinSpace 各求一次，两者互补；
+          3) 在所有“成功且卷绕后在限位内”的解中，取与当前关节角最接近的
+             （按 2π 周期化后比较），避免机械臂为到达目标而乱跳。
+
+        :return: 成功返回关节角（相对于零位），否则返回 None
         """
         if self.T_target is None:
             return None
 
-        thetalist, success = mr.IKinSpace(
-            self.S_space, self.M_sb, self.T_target, self.thetalist_c, self.eomg, self.ev)
+        n = self.thetalist_c.size
+        delta = np.full(n, 0.4)                 # 扰动量：打破奇异位形
+        seeds = (self.thetalist_c,              # 先试当前位形（解最连续）
+                 self.thetalist_c + delta,
+                 self.thetalist_c - delta,
+                 np.zeros(n),
+                 self.q0)
 
-        if not success:
-            return None
+        best, best_dist = None, np.inf
+        for seed in seeds:
+            for solver in (excore.IK_space_damped, mr.IKinSpace):
+                thetalist, ok = solver(
+                    self.S_space, self.M_sb, self.T_target,
+                    np.asarray(seed, dtype=float), self.eomg, self.ev)
+                if not ok:
+                    continue
 
-        # 卷绕到限位内且离原值最近的等效角
-        q_wrapped = excore.wrap_to_limit(thetalist, self.q_limit)
-        if q_wrapped is None:
-            return None
-        return q_wrapped
+                # 卷绕到限位内且离原值最近的等效角
+                q_wrapped = excore.wrap_to_limit(thetalist, self.q_limit)
+                if q_wrapped is None:
+                    continue
+
+                # 复核真实位姿误差：mr.IKinSpace 的收敛判据用的是旋量分量
+                # 范数，存在姿态偏差时它比真实位置误差宽松数倍
+                E = mr.TransInv(self.FK(q_wrapped)) @ self.T_target
+                if (np.linalg.norm(mr.so3ToVec(mr.MatrixLog3(E[:3, :3]))) > self.eomg
+                        or np.linalg.norm(E[:3, 3]) > self.ev):
+                    continue
+
+                # 与当前关节角的周期化距离（跨 ±π 边界也算近）
+                diff = (q_wrapped - self.thetalist_c + np.pi) % (2 * np.pi) - np.pi
+                dist = np.linalg.norm(diff)
+                if dist < best_dist:
+                    best, best_dist = q_wrapped, dist
+                    if best_dist < 1e-12:       # 当前位形本身就是解
+                        return best
+
+        return best
 
 # **************************************************
 # 雅可比
@@ -162,6 +197,17 @@ class Robot:
 # **************************************************
 # 速度
 # **************************************************
+
+    def set_dq(self, dq):
+        """
+        设置当前关节速度 dq
+        :param dq: 关节速度, shape (N,)
+        """
+        self.dq_c = dq.copy()
+        self.update_Vs()
+        self.update_Vb()
+        self.update_Vg()
+
     def update_Vs(self):
         """
         更新空间运动旋量 Vs = Js · dq
@@ -191,6 +237,11 @@ class Robot:
 
 
 # **************************************************
+# 绘图
+# **************************************************
+
+
+# **************************************************
 # 机械臂运动方法
 # **************************************************
     def move(self, verbose=True):
@@ -215,7 +266,7 @@ class Robot:
             print("移动到目标位姿矩阵：\n", np.round(self.T_c, 4))
         return True
 
-    def move_T(self, T_target, verbose=True):
+    def moveT(self, T_target, verbose=True):
         """
         移动到目标位姿矩阵。
 
@@ -240,7 +291,7 @@ class Robot:
             self.T_target = T_old          # 移动失败，目标位姿还原
         return ok
 
-    def move_q(self, q, strict=True):
+    def moveJ(self, q, strict=True):
         """
         移动到目标关节角，相对于初始关节角 q0
         :param q: 目标关节角（相对于初始关节角）, shape (N,)
@@ -282,6 +333,14 @@ class Robot:
         """打印当前关节角,相对于初始位姿"""
         print("当前关节角,相对于初始位姿为：", np.round(self.q_c, 4))
 
+    def print_dq(self):
+        """打印当前关节速度"""
+        print("当前关节速度为：", np.round(self.dq_c, 4))
+
+    def print_ddq(self):
+        """打印当前关节加速度"""
+        print("当前关节加速度为：", np.round(self.ddq_c, 4))
+
     def print_Tc(self):
         """打印当前位姿矩阵"""
         print("当前位姿矩阵为：\n", np.round(self.T_c, 4))
@@ -297,6 +356,26 @@ class Robot:
     def print_Jg(self):
         """打印当前几何雅可比矩阵"""
         print("当前几何雅可比矩阵为：\n", np.round(self.get_Jg(), 4))
+
+    def print_Vg(self):
+        """打印当前几何速度"""
+        print("当前几何速度为：", np.round(self.get_Vg(), 4))
+
+    def info(self):
+        """打印所有参数"""
+        print("\n==================当前参数为：==================")
+
+        self.print_Tc()
+        self.print_q()
+        self.print_dq()
+        self.print_ddq()
+        self.print_q_z()
+        self.print_Js()
+        self.print_Jb()
+        self.print_Jg()
+        self.print_Vg()
+
+        print("==================当前参数结束==================")
 
 
 # **************************************************
@@ -320,12 +399,16 @@ class Robot:
 
     def get_Js(self):
         """获取当前空间雅可比矩阵"""
-        return self.update_Js()
+        return self.update_Js().copy()
 
     def get_Jb(self):
         """获取当前物体雅可比矩阵"""
-        return self.update_Jb()
+        return self.update_Jb().copy()
 
     def get_Jg(self):
         """获取当前几何雅可比矩阵"""
-        return self.update_Jg()
+        return self.update_Jg().copy()
+
+    def get_Vg(self):
+        """获取当前几何速度"""
+        return self.update_Vg().copy()

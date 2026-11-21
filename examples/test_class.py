@@ -5,47 +5,27 @@ from arm_bot import arm_3R, viz
 
 def main():
     arm = arm_3R.make_robot()
-    arm.print_Tc()
-    arm.print_q_z()
-    arm.print_q()
+    arm.info()
 
-    print("*" * 20)
 
-    q = np.array([np.pi/2, 0, 0])
-    arm.move_q(q)
-    arm.print_Tc()
-    arm.print_q_z()
-    arm.print_q()
-
-    print("*" * 20)
-
-    T = np.array([[1, 0, 0, 9],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]])
-    arm.move_T(T)
-    arm.print_Tc()
-    arm.print_q_z()
-    arm.print_q()
-
-    print("*" * 20)
+    print("**************移动到目标关节角**************")
 
     q = np.array([-np.pi/2, np.pi/2, np.pi/2])
-    arm.move_q(q)
-    arm.print_Tc()
-    arm.print_q_z()
-    arm.print_q()
+    dq = np.array([1, 1, 1])
+    arm.moveJ(q)
+    arm.set_dq(dq)
+    arm.info()
 
-    arm.print_Js()
-    arm.print_Jb()
-    arm.print_Jg()
+    print("**************移动到目标位姿**************")
 
-    # TODO: dq2Vs / dq2Vb / dq2Vg 待实现（dq、ddq 后续再做），先不测
-    # dq = np.array([1, 0, 0])
-    # print(arm.dq2Vs(dq))
-    # print(arm.dq2Vb(dq))
-    # print(arm.dq2Vg(dq))
-
+    T = np.array([[1, 0, 0, 6],
+                  [0, 1, 0, 1],
+                  [0, 0, 1, 0],
+                  [0, 0, 0, 1]])
+    arm.moveT(T)
+    dq = np.array([1, 0, 0])
+    arm.set_dq(dq)
+    arm.info()
 
 if __name__ == "__main__":
     main()

@@ -51,6 +51,89 @@ def wrap_to_limit(q, q_limit, tol=1e-9):
     return out
 
 
+# ---------- 逆运动学 ----------
+
+def IK_space_damped(Slist, M, T, thetalist0, eomg, ev,
+                    lam0=1e-2, lam_up=10.0, lam_down=0.5,
+                    lam_min=1e-12, lam_max=1e8, maxiter=200):
+    """
+    空间雅可比下的逆运动学：阻尼最小二乘（Levenberg–Marquardt）。
+
+    与 modern_robotics.IKinSpace（无阻尼牛顿法，步长 = pinv(J)·V）的区别：
+    奇异位形附近 J 的最小奇异值趋于 0，伪逆步长会爆炸导致迭代发散。
+    本函数用阻尼步长
+
+        Δθ = Jᵀ (J Jᵀ + λ² I)⁻¹ V
+
+    λ 自适应调节：误差下降就减小 λ（趋近牛顿法、收敛快），
+    误差不降就增大 λ（步长受限、不会发散），从而在奇异位形下仍能收敛。
+
+    收敛判定用真实位姿误差（末端到目标的平移距离 ‖p‖、旋转向量范数 ‖ω‖），
+    而不是旋量分量范数——后者在存在姿态偏差时与真实位置误差可差数倍，
+    会导致“已收敛”解的实际位置误差超过 ev。
+
+    :param Slist: 螺旋轴矩阵（每列一个关节轴）, shape (6, N)
+    :param M: 零位时的末端位姿, shape (4, 4)
+    :param T: 目标位姿 Tsd, shape (4, 4)
+    :param thetalist0: 初值关节角, shape (N,)
+    :param eomg: 姿态误差容差（旋转向量范数）
+    :param ev: 位置误差容差（末端到目标的欧氏距离）
+    :param lam0: 初始阻尼系数
+    :param lam_up: 误差不降时 λ 的放大倍数
+    :param lam_down: 误差下降时 λ 的缩小倍数
+    :param lam_min / lam_max: λ 的上下限（λ 到上限说明已无法继续下降）
+    :param maxiter: 最大迭代次数
+    :return: (thetalist, success)，success=False 表示未在容差内收敛
+             （目标不可达，或迭代已停滞）
+    """
+    Slist = np.asarray(Slist, dtype=float)
+    M = np.asarray(M, dtype=float)
+    T = np.asarray(T, dtype=float)
+
+    th = np.array(thetalist0, dtype=float).copy()
+    lam = float(lam0)
+    I6 = np.eye(6)
+
+    def err_of(th_):
+        """
+        当前关节角下的误差：
+        :return: (Vb, w, p)
+            Vb 本体系旋量误差 [ω; v]，用于构造牛顿步长
+            w  旋转向量误差（本体系）
+            p  位置误差（本体系，范数 = 末端到目标的欧氏距离）
+        """
+        Tsb = mr.FKinSpace(M, Slist, th_)
+        E = mr.TransInv(Tsb) @ T              # 目标相对当前位姿
+        Vb = mr.se3ToVec(mr.MatrixLog6(E))
+        return Vb, Vb[:3], E[:3, 3]
+
+    Vb, w, p = err_of(th)
+    cost = np.linalg.norm(w) / eomg + np.linalg.norm(p) / ev
+    for _ in range(maxiter):
+        if np.linalg.norm(w) <= eomg and np.linalg.norm(p) <= ev:
+            return th, True
+
+        # 空间雅可比对应空间旋量误差 V = Ad(Tsb)·Vb
+        Tsb = mr.FKinSpace(M, Slist, th)
+        Vs = mr.Adjoint(Tsb) @ Vb
+        J = mr.JacobianSpace(Slist, th)
+        # 阻尼最小二乘步长（λ 大时步长被压住，不会在奇异方向上炸开）
+        dth = J.T @ np.linalg.solve(J @ J.T + (lam ** 2) * I6, Vs)
+
+        Vb_new, w_new, p_new = err_of(th + dth)
+        cost_new = np.linalg.norm(w_new) / eomg + np.linalg.norm(p_new) / ev
+        if cost_new < cost:
+            th = th + dth              # 接受步长
+            Vb, w, p, cost = Vb_new, w_new, p_new, cost_new
+            lam = max(lam * lam_down, lam_min)
+        else:
+            lam = min(lam * lam_up, lam_max)   # 拒绝步长，加大阻尼重试
+            if lam >= lam_max:
+                return th, False   # 已停滞：目标不可达或到达收敛极限
+
+    return th, False
+
+
 def Js2Jg(Js, T):
     """
     空间雅可比 --> 几何雅可比（实际广义速度映射矩阵）
